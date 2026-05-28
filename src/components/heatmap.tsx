@@ -3,8 +3,12 @@
 import { buildYearGrid } from '@/lib/build-year-grid';
 import { getYearMap } from '@/lib/get-year-map';
 import { type IntensityLevel, buildIntensityScale, intensityColor } from '@/lib/intensity-scale';
+import { fromIsoDate } from '@/lib/iso-date';
 import type { Entry, Habit, IsoDate } from '@/lib/types';
-import { useMemo, useState } from 'react';
+import { timeFormat } from 'd3-time-format';
+import { useId, useMemo, useState } from 'react';
+
+const formatTooltipDate = timeFormat('%a, %b %d, %Y');
 
 interface HeatmapProps {
   entries: Entry[];
@@ -35,8 +39,17 @@ const WEEKDAY_LABELS: { row: number; label: string }[] = [
 
 const LEGEND_LEVELS: IntensityLevel[] = [0, 1, 2, 3, 4];
 
+interface HoveredCell {
+  date: IsoDate;
+  count: number;
+  col: number;
+  row: number;
+}
+
 export function Heatmap({ entries, habits, today }: HeatmapProps) {
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
+  const [hovered, setHovered] = useState<HoveredCell | null>(null);
+  const tooltipId = useId();
 
   const selectedHabit = useMemo(
     () => (selectedHabitId ? (habits.find((h) => h.id === selectedHabitId) ?? null) : null),
@@ -68,7 +81,7 @@ export function Heatmap({ entries, habits, today }: HeatmapProps) {
       <div
         role="radiogroup"
         aria-label="Filter heatmap by habit"
-        className="-mx-1 flex flex-nowrap gap-1.5 overflow-x-auto px-1 pb-1"
+        className="-mx-1 flex flex-wrap gap-1.5 px-1"
       >
         <HabitChip
           label="All habits"
@@ -86,75 +99,121 @@ export function Heatmap({ entries, habits, today }: HeatmapProps) {
         ))}
       </div>
 
-      <div className="overflow-x-auto">
-        <svg
-          role="img"
-          aria-label="Yearly activity heatmap"
-          viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-          width="100%"
-          className="block min-w-[560px]"
-        >
-          <title>Yearly activity heatmap</title>
+      <div className="relative">
+        <div className="overflow-x-auto">
+          <svg
+            role="img"
+            aria-label="Yearly activity heatmap"
+            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+            width="100%"
+            className="block min-w-[560px]"
+          >
+            <title>Yearly activity heatmap</title>
 
-          {/* Month labels along the top */}
-          {monthLabels.map(({ col, label }) => (
-            <text
-              key={`m-${col}`}
-              x={LEFT_GUTTER + col * STRIDE}
-              y={TOP_GUTTER - 6}
-              className="fill-zinc-500 text-[9px] dark:fill-zinc-400"
-            >
-              {label}
-            </text>
-          ))}
+            {/* Month labels along the top */}
+            {monthLabels.map(({ col, label }) => (
+              <text
+                key={`m-${col}`}
+                x={LEFT_GUTTER + col * STRIDE}
+                y={TOP_GUTTER - 6}
+                className="fill-zinc-500 text-[9px] dark:fill-zinc-400"
+              >
+                {label}
+              </text>
+            ))}
 
-          {/* Weekday labels on the left */}
-          {WEEKDAY_LABELS.map(({ row, label }) => (
-            <text
-              key={`w-${row}`}
-              x={0}
-              y={TOP_GUTTER + row * STRIDE + CELL - 2}
-              className="fill-zinc-500 text-[9px] dark:fill-zinc-400"
-            >
-              {label}
-            </text>
-          ))}
+            {/* Weekday labels on the left */}
+            {WEEKDAY_LABELS.map(({ row, label }) => (
+              <text
+                key={`w-${row}`}
+                x={0}
+                y={TOP_GUTTER + row * STRIDE + CELL - 2}
+                className="fill-zinc-500 text-[9px] dark:fill-zinc-400"
+              >
+                {label}
+              </text>
+            ))}
 
-          {/* Day cells */}
-          {weeks.map((week, c) =>
-            week.map((date, r) => {
-              if (date > today) return null;
-              const count = yearMap[date] ?? 0;
-              const level = toLevel(count);
-              const x = LEFT_GUTTER + c * STRIDE;
-              const y = TOP_GUTTER + r * STRIDE;
-              const label =
-                count === 0
-                  ? `${date}: not marked`
-                  : `${date}: ${count} habit${count === 1 ? '' : 's'} marked`;
-              return (
-                <rect
-                  key={date}
-                  x={x}
-                  y={y}
-                  width={CELL}
-                  height={CELL}
-                  rx={2}
-                  ry={2}
-                  tabIndex={-1}
-                  aria-label={label}
-                  style={level === 0 ? undefined : { fill: intensityColor(level, baseColor) }}
-                  className={
-                    level === 0
-                      ? 'fill-zinc-200 dark:fill-zinc-800'
-                      : 'stroke-black/5 dark:stroke-white/5'
-                  }
-                  strokeWidth={level === 0 ? 0 : 1}
-                />
-              );
-            })
-          )}
-        </svg>
+            {/* Day cells */}
+            {weeks.map((week, c) =>
+              week.map((date, r) => {
+                if (date > today) return null;
+                const count = yearMap[date] ?? 0;
+                const level = toLevel(count);
+                const x = LEFT_GUTTER + c * STRIDE;
+                const y = TOP_GUTTER + r * STRIDE;
+                const label =
+                  count === 0
+                    ? `${date}: not marked`
+                    : `${date}: ${count} habit${count === 1 ? '' : 's'} marked`;
+                const isHovered = hovered?.date === date;
+                return (
+                  <rect
+                    key={date}
+                    x={x}
+                    y={y}
+                    width={CELL}
+                    height={CELL}
+                    rx={2}
+                    ry={2}
+                    tabIndex={-1}
+                    aria-label={label}
+                    aria-describedby={isHovered ? tooltipId : undefined}
+                    onMouseEnter={() => setHovered({ date, count, col: c, row: r })}
+                    onMouseLeave={() => setHovered((h) => (h?.date === date ? null : h))}
+                    onFocus={() => setHovered({ date, count, col: c, row: r })}
+                    onBlur={() => setHovered((h) => (h?.date === date ? null : h))}
+                    style={level === 0 ? undefined : { fill: intensityColor(level, baseColor) }}
+                    className={
+                      level === 0
+                        ? 'fill-zinc-200 dark:fill-zinc-800'
+                        : 'stroke-black/5 dark:stroke-white/5'
+                    }
+                    strokeWidth={level === 0 ? 0 : 1}
+                  />
+                );
+              })
+            )}
+          </svg>
+        </div>
+
+        {hovered &&
+          (() => {
+            // Anchor the tooltip horizontally so it never overflows the
+            // outer wrapper. Near the left edge anchor at the cell's left
+            // edge; near the right edge anchor at the cell's right edge;
+            // otherwise center it over the cell.
+            const isLeftEdge = hovered.col <= 3;
+            const isRightEdge = hovered.col >= COLS - 4;
+            const cellMidX = LEFT_GUTTER + hovered.col * STRIDE + CELL / 2;
+            const cellRightX = LEFT_GUTTER + hovered.col * STRIDE + CELL;
+            const cellLeftX = LEFT_GUTTER + hovered.col * STRIDE;
+            const leftPct = isLeftEdge
+              ? (cellLeftX / WIDTH) * 100
+              : isRightEdge
+                ? (cellRightX / WIDTH) * 100
+                : (cellMidX / WIDTH) * 100;
+            const translateX = isLeftEdge ? '0%' : isRightEdge ? '-100%' : '-50%';
+            return (
+              <div
+                id={tooltipId}
+                role="tooltip"
+                style={{
+                  left: `${leftPct}%`,
+                  top: `${((TOP_GUTTER + hovered.row * STRIDE) / HEIGHT) * 100}%`,
+                  transform: `translate(${translateX}, calc(-100% - 8px))`,
+                }}
+                className="pointer-events-none absolute z-10 whitespace-nowrap rounded-md bg-zinc-900 px-2 py-1 text-xs text-white shadow-lg transition-opacity duration-100 motion-reduce:transition-none dark:bg-zinc-100 dark:text-zinc-900"
+              >
+                <div className="font-medium">{formatTooltipDate(fromIsoDate(hovered.date))}</div>
+                <div className="text-zinc-300 dark:text-zinc-600">
+                  {hovered.count === 0
+                    ? 'Not marked'
+                    : `${hovered.count} habit${hovered.count === 1 ? '' : 's'}`}
+                </div>
+              </div>
+            );
+          })()}
       </div>
 
       {/* Legend */}
