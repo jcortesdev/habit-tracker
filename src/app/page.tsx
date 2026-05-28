@@ -3,6 +3,8 @@
 import { AddHabitForm } from '@/components/add-habit-form';
 import { EmptyState } from '@/components/empty-state';
 import { HabitList } from '@/components/habit-list';
+import { Heatmap } from '@/components/heatmap';
+import { LoadingSkeleton } from '@/components/loading-skeleton';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { toIsoDate } from '@/lib/iso-date';
 import { useEntries } from '@/lib/use-entries';
@@ -25,12 +27,19 @@ export default function Home() {
         <ThemeToggle />
       </header>
 
-      <AddHabitForm />
-
-      {habits === undefined || entries === undefined ? null : habits.length === 0 ? (
-        <EmptyState />
+      {habits === undefined || entries === undefined ? (
+        <LoadingSkeleton />
+      ) : habits.length === 0 ? (
+        <>
+          <AddHabitForm />
+          <EmptyState />
+        </>
       ) : (
-        <HabitList habits={habits} entries={entries} today={today} />
+        <>
+          <Heatmap entries={entries} habits={habits} today={today} />
+          <AddHabitForm />
+          <HabitList habits={habits} entries={entries} today={today} />
+        </>
       )}
     </main>
   );
