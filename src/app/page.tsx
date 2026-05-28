@@ -1,14 +1,26 @@
+'use client';
+
+import { EmptyState } from '@/components/empty-state';
+import { HabitList } from '@/components/habit-list';
+import { useHabits } from '@/lib/use-habits';
+
 export default function Home() {
+  const habits = useHabits();
+
   return (
-    <main className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="max-w-md space-y-4">
-        <p className="text-xs uppercase tracking-widest text-zinc-500">Module 1 — PWA shell</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Habit Tracker</h1>
-        <p className="text-zinc-600 leading-relaxed dark:text-zinc-400">
-          Offline-first habit tracker with a GitHub-style yearly heatmap. The shell is installable.
-          Habits, toggles, and the heatmap land in later modules.
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-10 sm:py-16">
+      <header className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight">Habit Tracker</h1>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          Offline-first. Your data lives on this device.
         </p>
-      </div>
+      </header>
+
+      {habits === undefined ? null : habits.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <HabitList habits={habits} />
+      )}
     </main>
   );
 }
