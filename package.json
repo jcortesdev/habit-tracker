@@ -15,6 +15,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "dexie": "^4.4.3",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -33,6 +34,7 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/coverage-v8": "^4.0.0",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^26.1.0",
     "serwist": "^9.0.14",
     "tailwindcss": "^4",
