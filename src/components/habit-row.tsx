@@ -28,6 +28,15 @@ export function HabitRow({ habit, entries, today }: HabitRowProps) {
     }
   }
 
+  async function handleDelete() {
+    const ok = window.confirm(`Delete "${habit.name}"? Its history will be lost.`);
+    if (!ok) return;
+    await db.transaction('rw', db.habits, db.entries, async () => {
+      await db.entries.where('habitId').equals(habit.id).delete();
+      await db.habits.delete(habit.id);
+    });
+  }
+
   return (
     <li className="flex items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 dark:border-zinc-800">
       <button
@@ -69,6 +78,27 @@ export function HabitRow({ habit, entries, today }: HabitRowProps) {
       </div>
 
       <MiniBar entries={entries} habitId={habit.id} color={habit.color} today={today} />
+
+      <button
+        type="button"
+        onClick={handleDelete}
+        aria-label={`Delete ${habit.name}`}
+        className="shrink-0 rounded-md p-1 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+      >
+        <svg
+          viewBox="0 0 16 16"
+          aria-hidden
+          className="size-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <title>Delete habit</title>
+          <path d="M2.5 4h11M6 4V2.5h4V4m-4.5 0v9.5h5V4M6.5 6.5v5m3-5v5" />
+        </svg>
+      </button>
     </li>
   );
 }
