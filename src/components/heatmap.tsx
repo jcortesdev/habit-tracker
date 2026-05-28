@@ -2,11 +2,21 @@
 
 import { buildYearGrid } from '@/lib/build-year-grid';
 import { getYearMap } from '@/lib/get-year-map';
+import { type NavKey, getNextFocusedCell } from '@/lib/heatmap-nav';
 import { type IntensityLevel, buildIntensityScale, intensityColor } from '@/lib/intensity-scale';
 import { fromIsoDate } from '@/lib/iso-date';
 import type { Entry, Habit, IsoDate } from '@/lib/types';
 import { timeFormat } from 'd3-time-format';
-import { useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+
+const NAV_KEYS = new Set<NavKey>([
+  'ArrowLeft',
+  'ArrowRight',
+  'ArrowUp',
+  'ArrowDown',
+  'Home',
+  'End',
+]);
 
 const formatTooltipDate = timeFormat('%a, %b %d, %Y');
 
@@ -51,6 +61,25 @@ export function Heatmap({ entries, habits, today }: HeatmapProps) {
   const [hovered, setHovered] = useState<HoveredCell | null>(null);
   const tooltipId = useId();
 
+  // Roving-tabindex focus: only one cell is in the tab order at a time.
+  // Default to today's position (last column, today's weekday) so users
+  // land on the most relevant cell first.
+  const todayRow = fromIsoDate(today).getDay();
+  const [focused, setFocused] = useState<{ col: number; row: number }>(() => ({
+    col: COLS - 1,
+    row: todayRow,
+  }));
+  const focusRef = useRef<SVGRectElement | null>(null);
+  const wantsFocus = useRef(false);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `focused` is the trigger; the effect intentionally re-runs whenever it changes so the new cell can take focus
+  useEffect(() => {
+    if (wantsFocus.current) {
+      focusRef.current?.focus();
+      wantsFocus.current = false;
+    }
+  }, [focused]);
+
   const selectedHabit = useMemo(
     () => (selectedHabitId ? (habits.find((h) => h.id === selectedHabitId) ?? null) : null),
     [habits, selectedHabitId]
@@ -65,6 +94,15 @@ export function Heatmap({ entries, habits, today }: HeatmapProps) {
     for (const v of Object.values(yearMap)) if (v > m) m = v;
     return { toLevel: buildIntensityScale(m), maxCount: m };
   }, [yearMap]);
+
+  function handleCellKeyDown(e: React.KeyboardEvent<SVGRectElement>, col: number, row: number) {
+    if (!NAV_KEYS.has(e.key as NavKey)) return;
+    e.preventDefault();
+    const next = getNextFocusedCell({ col, row }, e.key as NavKey, weeks, today);
+    if (!next) return;
+    wantsFocus.current = true;
+    setFocused(next);
+  }
 
   return (
     <section aria-labelledby="heatmap-heading" className="space-y-3">
@@ -147,29 +185,40 @@ export function Heatmap({ entries, habits, today }: HeatmapProps) {
                     ? `${date}: not marked`
                     : `${date}: ${count} habit${count === 1 ? '' : 's'} marked`;
                 const isHovered = hovered?.date === date;
+                const isFocused = focused.col === c && focused.row === r;
                 return (
                   <rect
                     key={date}
+                    ref={isFocused ? focusRef : undefined}
                     x={x}
                     y={y}
                     width={CELL}
                     height={CELL}
                     rx={2}
                     ry={2}
-                    tabIndex={-1}
+                    tabIndex={isFocused ? 0 : -1}
                     aria-label={label}
                     aria-describedby={isHovered ? tooltipId : undefined}
+                    onKeyDown={(e) => handleCellKeyDown(e, c, r)}
+                    onPointerDown={(e) => {
+                      // SVG <rect> doesn't always receive focus on click in
+                      // every browser; force it so the focus styling sticks.
+                      (e.currentTarget as SVGRectElement).focus();
+                    }}
                     onMouseEnter={() => setHovered({ date, count, col: c, row: r })}
                     onMouseLeave={() => setHovered((h) => (h?.date === date ? null : h))}
-                    onFocus={() => setHovered({ date, count, col: c, row: r })}
+                    onFocus={() => {
+                      setHovered({ date, count, col: c, row: r });
+                      if (!isFocused) setFocused({ col: c, row: r });
+                    }}
                     onBlur={() => setHovered((h) => (h?.date === date ? null : h))}
                     style={level === 0 ? undefined : { fill: intensityColor(level, baseColor) }}
                     className={
                       level === 0
-                        ? 'fill-zinc-200 dark:fill-zinc-800'
-                        : 'stroke-black/5 dark:stroke-white/5'
+                        ? 'fill-zinc-200 stroke-transparent outline-none hover:stroke-zinc-400 focus:stroke-zinc-900 dark:fill-zinc-800 dark:hover:stroke-zinc-500 dark:focus:stroke-zinc-100'
+                        : 'stroke-black/5 outline-none hover:stroke-zinc-400 focus:stroke-zinc-900 dark:stroke-white/5 dark:hover:stroke-zinc-500 dark:focus:stroke-zinc-100'
                     }
-                    strokeWidth={level === 0 ? 0 : 1}
+                    strokeWidth={1.5}
                   />
                 );
               })
