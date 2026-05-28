@@ -3,11 +3,12 @@
 import { buildYearGrid } from '@/lib/build-year-grid';
 import { getYearMap } from '@/lib/get-year-map';
 import { type IntensityLevel, buildIntensityScale, intensityColor } from '@/lib/intensity-scale';
-import type { Entry, IsoDate } from '@/lib/types';
-import { useMemo } from 'react';
+import type { Entry, Habit, IsoDate } from '@/lib/types';
+import { useMemo, useState } from 'react';
 
 interface HeatmapProps {
   entries: Entry[];
+  habits: Habit[];
   today: IsoDate;
 }
 
@@ -22,8 +23,8 @@ const TOP_GUTTER = 18;
 const WIDTH = LEFT_GUTTER + COLS * STRIDE - GAP + 2;
 const HEIGHT = TOP_GUTTER + ROWS * STRIDE - GAP + 2;
 
-// Neutral slate base for the "all habits" view. The per-habit drilldown
-// (Task 5) will swap this for `habit.color`.
+// Neutral slate base for the "all habits" view. When a single habit is
+// selected, its own color takes over.
 const NEUTRAL_BASE = '#64748b';
 
 const WEEKDAY_LABELS: { row: number; label: string }[] = [
@@ -34,9 +35,17 @@ const WEEKDAY_LABELS: { row: number; label: string }[] = [
 
 const LEGEND_LEVELS: IntensityLevel[] = [0, 1, 2, 3, 4];
 
-export function Heatmap({ entries, today }: HeatmapProps) {
+export function Heatmap({ entries, habits, today }: HeatmapProps) {
+  const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
+
+  const selectedHabit = useMemo(
+    () => (selectedHabitId ? (habits.find((h) => h.id === selectedHabitId) ?? null) : null),
+    [habits, selectedHabitId]
+  );
+  const baseColor = selectedHabit?.color ?? NEUTRAL_BASE;
+
   const { weeks, monthLabels } = useMemo(() => buildYearGrid(today), [today]);
-  const yearMap = useMemo(() => getYearMap(entries), [entries]);
+  const yearMap = useMemo(() => getYearMap(entries, selectedHabitId), [entries, selectedHabitId]);
 
   const { toLevel, maxCount } = useMemo(() => {
     let m = 0;
@@ -53,6 +62,28 @@ export function Heatmap({ entries, today }: HeatmapProps) {
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
           {maxCount === 0 ? 'No marks yet' : `Up to ${maxCount} per day`}
         </p>
+      </div>
+
+      {/* Drilldown chips */}
+      <div
+        role="radiogroup"
+        aria-label="Filter heatmap by habit"
+        className="-mx-1 flex flex-nowrap gap-1.5 overflow-x-auto px-1 pb-1"
+      >
+        <HabitChip
+          label="All habits"
+          selected={selectedHabitId === null}
+          onSelect={() => setSelectedHabitId(null)}
+        />
+        {habits.map((h) => (
+          <HabitChip
+            key={h.id}
+            label={h.name}
+            color={h.color}
+            selected={selectedHabitId === h.id}
+            onSelect={() => setSelectedHabitId(h.id)}
+          />
+        ))}
       </div>
 
       <div className="overflow-x-auto">
@@ -112,7 +143,7 @@ export function Heatmap({ entries, today }: HeatmapProps) {
                   ry={2}
                   tabIndex={-1}
                   aria-label={label}
-                  style={level === 0 ? undefined : { fill: intensityColor(level, NEUTRAL_BASE) }}
+                  style={level === 0 ? undefined : { fill: intensityColor(level, baseColor) }}
                   className={
                     level === 0
                       ? 'fill-zinc-200 dark:fill-zinc-800'
@@ -134,7 +165,7 @@ export function Heatmap({ entries, today }: HeatmapProps) {
             <span
               key={lvl}
               aria-hidden
-              style={lvl === 0 ? undefined : { backgroundColor: intensityColor(lvl, NEUTRAL_BASE) }}
+              style={lvl === 0 ? undefined : { backgroundColor: intensityColor(lvl, baseColor) }}
               className={`block size-3 rounded-sm ${lvl === 0 ? 'bg-zinc-200 dark:bg-zinc-800' : ''}`}
             />
           ))}
@@ -142,5 +173,38 @@ export function Heatmap({ entries, today }: HeatmapProps) {
         <span>More</span>
       </div>
     </section>
+  );
+}
+
+interface HabitChipProps {
+  label: string;
+  color?: string;
+  selected: boolean;
+  onSelect: () => void;
+}
+
+function HabitChip({ label, color, selected, onSelect }: HabitChipProps) {
+  return (
+    <button
+      type="button"
+      // biome-ignore lint/a11y/useSemanticElements: chip group uses role=radio so the underlying control stays a button (keeps focus ring/text-truncate styling); semantics still satisfy the radiogroup
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100 ${
+        selected
+          ? 'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
+          : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900'
+      }`}
+    >
+      {color && (
+        <span
+          aria-hidden
+          style={{ backgroundColor: color }}
+          className="block size-2 rounded-full"
+        />
+      )}
+      <span className="max-w-[10rem] truncate">{label}</span>
+    </button>
   );
 }

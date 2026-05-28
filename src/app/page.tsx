@@ -33,7 +33,7 @@ export default function Home() {
         </>
       ) : (
         <>
-          <Heatmap entries={entries} today={today} />
+          <Heatmap entries={entries} habits={habits} today={today} />
           <AddHabitForm />
           <HabitList habits={habits} entries={entries} today={today} />
         </>
