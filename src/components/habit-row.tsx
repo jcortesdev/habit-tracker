@@ -5,6 +5,7 @@ import { getStreak } from '@/lib/get-streak';
 import { resolveEditedName } from '@/lib/resolve-edited-name';
 import type { Entry, Habit } from '@/lib/types';
 import { useRef, useState } from 'react';
+import { ConfirmDialog } from './confirm-dialog';
 import { MiniBar } from './mini-bar';
 
 interface HabitRowProps {
@@ -20,6 +21,7 @@ export function HabitRow({ habit, entries, today }: HabitRowProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(habit.name);
   const cancelledRef = useRef(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   function startEditing() {
     setDraft(habit.name);
@@ -66,9 +68,8 @@ export function HabitRow({ habit, entries, today }: HabitRowProps) {
     }
   }
 
-  async function handleDelete() {
-    const ok = window.confirm(`Delete "${habit.name}"? Its history will be lost.`);
-    if (!ok) return;
+  async function handleConfirmDelete() {
+    setConfirmOpen(false);
     await db.transaction('rw', db.habits, db.entries, async () => {
       await db.entries.where('habitId').equals(habit.id).delete();
       await db.habits.delete(habit.id);
@@ -127,7 +128,7 @@ export function HabitRow({ habit, entries, today }: HabitRowProps) {
             type="button"
             onClick={startEditing}
             aria-label={`Edit ${habit.name}`}
-            className="block w-full truncate rounded-sm text-left text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
+            className="block w-full cursor-text truncate rounded-sm text-left text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
           >
             {habit.name}
           </button>
@@ -141,7 +142,7 @@ export function HabitRow({ habit, entries, today }: HabitRowProps) {
 
       <button
         type="button"
-        onClick={handleDelete}
+        onClick={() => setConfirmOpen(true)}
         aria-label={`Delete ${habit.name}`}
         className="shrink-0 rounded-md p-1 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
       >
@@ -159,6 +160,16 @@ export function HabitRow({ habit, entries, today }: HabitRowProps) {
           <path d="M2.5 4h11M6 4V2.5h4V4m-4.5 0v9.5h5V4M6.5 6.5v5m3-5v5" />
         </svg>
       </button>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title={`Delete "${habit.name}"?`}
+        description="Its entire history will be removed from this device. This can't be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </li>
   );
 }
