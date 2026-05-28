@@ -1,5 +1,6 @@
 'use client';
 
+import { AddHabitForm } from '@/components/add-habit-form';
 import { EmptyState } from '@/components/empty-state';
 import { HabitList } from '@/components/habit-list';
 import { useHabits } from '@/lib/use-habits';
@@ -15,6 +16,8 @@ export default function Home() {
           Offline-first. Your data lives on this device.
         </p>
       </header>
+
+      <AddHabitForm />
 
       {habits === undefined ? null : habits.length === 0 ? (
         <EmptyState />
