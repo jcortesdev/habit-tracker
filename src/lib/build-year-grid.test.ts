@@ -49,7 +49,9 @@ describe('buildYearGrid', () => {
     const { monthLabels } = buildYearGrid('2026-05-28');
     // 53 weeks ≈ 371 days, so the grid wraps around: the starting month and
     // the ending month can be the same (e.g. May 2025 … May 2026 → 13 labels).
-    expect(monthLabels.length).toBeGreaterThanOrEqual(12);
+    // Labels with <3 cols of width are dropped to prevent overlap at the
+    // edges, so the count lands between ~11 and ~13 depending on weekday.
+    expect(monthLabels.length).toBeGreaterThanOrEqual(11);
     expect(monthLabels.length).toBeLessThanOrEqual(13);
   });
 

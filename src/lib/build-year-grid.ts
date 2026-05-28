@@ -52,19 +52,24 @@ export function buildYearGrid(today: IsoDate): YearGrid {
     weeks.push(week);
   }
 
-  const monthLabels: { col: number; label: string }[] = [];
+  // Collect raw month boundaries (column where a new month starts), then
+  // drop any whose visible width is too small — that's what causes the
+  // "MayJun" overlap when the grid begins mid-month.
+  const MIN_LABEL_WIDTH = 3;
+  const raw: { col: number; label: string }[] = [];
   let lastMonth = -1;
   for (let col = 0; col < WEEKS; col++) {
     const month = fromIsoDate(weeks[col][0]).getMonth();
     if (month !== lastMonth) {
-      // Only emit a label when the new month gets enough room (skip the very
-      // last column to avoid an overflowing label glued to the edge).
-      if (col < WEEKS - 1) {
-        monthLabels.push({ col, label: MONTH_SHORT[month] });
-      }
+      raw.push({ col, label: MONTH_SHORT[month] });
       lastMonth = month;
     }
   }
+
+  const monthLabels = raw.filter((entry, i) => {
+    const nextCol = i < raw.length - 1 ? raw[i + 1].col : WEEKS;
+    return nextCol - entry.col >= MIN_LABEL_WIDTH;
+  });
 
   return { weeks, monthLabels };
 }
