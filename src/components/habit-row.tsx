@@ -1,7 +1,9 @@
 'use client';
 
 import { db } from '@/lib/db';
+import { getStreak } from '@/lib/get-streak';
 import type { Entry, Habit } from '@/lib/types';
+import { MiniBar } from './mini-bar';
 
 interface HabitRowProps {
   habit: Habit;
@@ -11,6 +13,7 @@ interface HabitRowProps {
 
 export function HabitRow({ habit, entries, today }: HabitRowProps) {
   const doneToday = entries.some((e) => e.habitId === habit.id && e.date === today);
+  const streak = getStreak(entries, habit.id, today);
 
   async function handleToggle() {
     const existing = await db.entries.where('[habitId+date]').equals([habit.id, today]).first();
@@ -57,7 +60,15 @@ export function HabitRow({ habit, entries, today }: HabitRowProps) {
           </svg>
         )}
       </button>
-      <span className="text-sm font-medium">{habit.name}</span>
+
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm font-medium">{habit.name}</div>
+        {streak > 0 && (
+          <div className="text-xs text-zinc-500 dark:text-zinc-400">{streak}-day streak</div>
+        )}
+      </div>
+
+      <MiniBar entries={entries} habitId={habit.id} color={habit.color} today={today} />
     </li>
   );
 }
