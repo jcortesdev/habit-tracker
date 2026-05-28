@@ -1,24 +1,17 @@
-import type { Habit } from '@/lib/types';
+import type { Entry, Habit } from '@/lib/types';
+import { HabitRow } from './habit-row';
 
 interface HabitListProps {
   habits: Habit[];
+  entries: Entry[];
+  today: string;
 }
 
-export function HabitList({ habits }: HabitListProps) {
+export function HabitList({ habits, entries, today }: HabitListProps) {
   return (
     <ul className="flex flex-col gap-2">
       {habits.map((habit) => (
-        <li
-          key={habit.id}
-          className="flex items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 dark:border-zinc-800"
-        >
-          <span
-            aria-hidden
-            className="size-3 rounded-full"
-            style={{ backgroundColor: habit.color }}
-          />
-          <span className="text-sm font-medium">{habit.name}</span>
-        </li>
+        <HabitRow key={habit.id} habit={habit} entries={entries} today={today} />
       ))}
     </ul>
   );
