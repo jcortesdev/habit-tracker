@@ -3,7 +3,7 @@
 > Offline-first habit tracker with a GitHub-style yearly heatmap. Built as a real PWA — installable, survives airplane mode, no backend.
 
 ![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![Next.js](https://img.shields.io/badge/-Next.js_15-000000?style=flat-square&logo=nextdotjs&logoColor=white)
+![Next.js](https://img.shields.io/badge/-Next.js_16-000000?style=flat-square&logo=nextdotjs&logoColor=white)
 ![Tailwind](https://img.shields.io/badge/-Tailwind_CSS-38B2AC?style=flat-square&logo=tailwindcss&logoColor=white)
 ![Dexie](https://img.shields.io/badge/-Dexie-FE5196?style=flat-square)
 ![PWA](https://img.shields.io/badge/-PWA-5A0FC8?style=flat-square&logo=pwa&logoColor=white)
@@ -49,13 +49,13 @@ See [`docs/DECISIONS.md`](./docs/DECISIONS.md) — ADR-001 (Dexie over a backend
 
 | Layer | Choice | Why |
 |-------|--------|-----|
-| Framework | **Next.js 15** (App Router) | Static export + Vercel PWA headers + room to grow |
-| UI library | **React 19** | Stable in Next 15 |
+| Framework | **Next.js 16** (App Router) | Static export + Vercel PWA headers + room to grow |
+| UI library | **React 19** | Stable in Next 16 |
 | Language | **TypeScript** (strict mode) | Type safety end-to-end, including Dexie schema |
 | Styling | **Tailwind CSS v4** | Native CSS variables, no PostCSS config |
 | Data | **Dexie** (IndexedDB wrapper) | Lightweight, typed, survives reload, offline-first |
 | Visualization | **D3 utilities** (`d3-scale`, `d3-time-format`) | Compose scales + SVG directly, no chart library |
-| PWA | **next-pwa** (or vanilla service worker if compat blocks) | Installable, offline shell precache |
+| PWA | **Serwist** (`@serwist/next`) | Modern successor to `next-pwa`, first-class Next 16 support |
 | State | **`useState` + Dexie live queries** | No global store |
 | Testing | **Vitest** + **Playwright** + **`@axe-core/playwright`** + **`fake-indexeddb`** | Unit + integration + E2E + a11y |
 | Linting | **Biome** | Replaces ESLint + Prettier in one tool |
@@ -72,38 +72,33 @@ pnpm install
 pnpm dev          # http://localhost:3000
 ```
 
-Other scripts (land in Module 1 alongside the scaffold):
+Other scripts:
 
 ```bash
-pnpm build        # production build (Next.js)
+pnpm build        # production build (Next.js, webpack — Serwist needs it)
 pnpm start        # serve the production build
 pnpm test         # unit tests (Vitest)
 pnpm test:e2e     # end-to-end tests (Playwright + axe)
 pnpm check        # Biome (lint + format)
+pnpm typecheck    # tsc --noEmit
 ```
 
-## Project structure (planned)
+## Project structure
 
 ```
-app/
-├── layout.tsx               # root layout, theme provider, manifest link
-├── page.tsx                 # home: habit list + aggregated heatmap
-├── globals.css              # Tailwind v4 import + design tokens
-└── ...                      # additional routes as needed (settings, about)
-components/                  # flat list, co-located tests, no barrels
-├── habit-row.tsx
-├── habit-list.tsx
-├── heatmap.tsx              # the D3 SVG
-├── theme-toggle.tsx
-└── ...
-lib/
-├── db.ts                    # Dexie client + schema
-├── habits.ts                # pure helpers (addHabit, toggleEntry, getStreak)
-├── year-map.ts              # date → count aggregation for the heatmap
-├── color-scale.ts           # D3 scale wrapper
-└── use-theme.ts             # light/dark helpers
+src/
+├── app/
+│   ├── layout.tsx           # root layout, metadata, fonts
+│   ├── page.tsx             # home: habit list + aggregated heatmap (M3+)
+│   ├── manifest.ts          # web app manifest (Next 13+ convention)
+│   ├── sw.ts                # Serwist service worker source
+│   └── globals.css          # Tailwind v4 import + design tokens
+├── components/              # flat list, co-located tests, no barrels (M3+)
+└── lib/                     # Dexie client + pure helpers (M2+)
 public/
-└── icons/                   # PWA icons (real ones in Module 5)
+└── icons/                   # PWA icons (placeholders for now, real in M5)
+scripts/
+└── generate-placeholder-icons.mjs   # zero-dep PNG generator for the placeholder icons
 ```
 
 ## Architecture decisions
@@ -140,7 +135,7 @@ This is a portfolio demo. At production scale I would:
 
 ## Status
 
-In progress — Module 0 (foundation). See the modules in [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the full roadmap.
+In progress — Module 1 (PWA shell) landing. The Next.js scaffold, Biome / Vitest / Playwright tooling, Serwist service worker, manifest, and placeholder PWA icons are in. The habit data model, UI, and heatmap land in Modules 2-4; deploy in Module 5. See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the full roadmap.
 
 ## License
 

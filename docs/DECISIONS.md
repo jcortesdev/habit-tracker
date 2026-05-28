@@ -39,7 +39,7 @@ Lightweight records of architectural decisions. Each one is short on purpose: co
 
 **Context:** Aurora — the previous project in this portfolio — chose Vite over Next.js for a single static product page. The reasoning was sound for that scope. This project has different shape: it needs to be installable, it has a service worker, and it ships on Vercel where Next.js is first-class. The question is whether to stay loyal to Vite or pick the right tool for this scope.
 
-**Decision:** Use Next.js 15 with the App Router. Static export (no SSR, no Server Actions, no Route Handlers). Hosted on Vercel.
+**Decision:** Use Next.js 16 with the App Router. Static export (no SSR, no Server Actions, no Route Handlers). Hosted on Vercel.
 
 **Why Next.js earns its weight here:**
 
@@ -60,6 +60,7 @@ The two decisions are not in conflict; they're *the same decision made on differ
 - ✅ Future routes (settings, about, drill-down) are essentially free.
 - ⚠️ Bundle is larger than the equivalent Vite shell. Acceptable cost for installability and routing room.
 - ⚠️ Need to be careful not to drift into SSR or Server Actions — they would silently break the offline-first contract. ADR-001 governs.
+- ⚠️ Next 16 defaults to Turbopack, but Serwist requires webpack to build the service worker. Dev and build run with `--webpack` until Serwist ships Turbopack support. Documented in [`ARCHITECTURE.md`](./ARCHITECTURE.md#pwa-layer).
 
 ---
 

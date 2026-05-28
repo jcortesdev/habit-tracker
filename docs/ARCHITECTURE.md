@@ -6,7 +6,7 @@ This document explains the technical structure and key design decisions of the p
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                Next.js build (compile time)              │
+│                Next.js build (webpack, compile time)              │
 │  ┌────────────────────────────────────────────────────┐  │
 │  │  TypeScript → ESM → tree-shake → minify            │  │
 │  │  Tailwind   → purge → minify                       │  │
@@ -78,7 +78,7 @@ The app is a real PWA, verified by:
 - Install criteria met on Chrome / Edge desktop and Android (Lighthouse PWA audit ≥ 90).
 - An end-to-end check in Module 5: load the app once online, switch to airplane mode, reload, mark a habit, reload again — data persists, UI works.
 
-The service worker is `next-pwa` if it cleanly supports Next 15 by the time Module 1 lands. If not, vanilla Workbox or a hand-rolled service worker — the goal is install + offline shell, not framework loyalty.
+The service worker uses **Serwist** (`@serwist/next`), the actively-maintained successor to `next-pwa`. It compiles a Workbox-based service worker from `src/app/sw.ts` and emits `public/sw.js` at build time. Serwist needs webpack (not Turbopack) for the SW build, so dev and build scripts pass `--webpack` to Next.
 
 ## Visualization (the heatmap)
 
