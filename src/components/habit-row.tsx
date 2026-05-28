@@ -2,7 +2,9 @@
 
 import { db } from '@/lib/db';
 import { getStreak } from '@/lib/get-streak';
+import { resolveEditedName } from '@/lib/resolve-edited-name';
 import type { Entry, Habit } from '@/lib/types';
+import { useRef, useState } from 'react';
 import { MiniBar } from './mini-bar';
 
 interface HabitRowProps {
@@ -14,6 +16,42 @@ interface HabitRowProps {
 export function HabitRow({ habit, entries, today }: HabitRowProps) {
   const doneToday = entries.some((e) => e.habitId === habit.id && e.date === today);
   const streak = getStreak(entries, habit.id, today);
+
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(habit.name);
+  const cancelledRef = useRef(false);
+
+  function startEditing() {
+    setDraft(habit.name);
+    setEditing(true);
+  }
+
+  async function commit() {
+    const next = resolveEditedName(draft, habit.name);
+    setEditing(false);
+    if (next !== habit.name) {
+      await db.habits.update(habit.id, { name: next });
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      commit();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelledRef.current = true;
+      setEditing(false);
+    }
+  }
+
+  function handleBlur() {
+    if (cancelledRef.current) {
+      cancelledRef.current = false;
+      return;
+    }
+    commit();
+  }
 
   async function handleToggle() {
     const existing = await db.entries.where('[habitId+date]').equals([habit.id, today]).first();
@@ -71,8 +109,30 @@ export function HabitRow({ habit, entries, today }: HabitRowProps) {
       </button>
 
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium">{habit.name}</div>
-        {streak > 0 && (
+        {editing ? (
+          <input
+            type="text"
+            value={draft}
+            // biome-ignore lint/a11y/noAutofocus: edit-on-click intentionally focuses the field
+            autoFocus
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+            maxLength={80}
+            aria-label="Habit name"
+            className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm font-medium outline-none focus-visible:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:focus-visible:border-zinc-100"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={startEditing}
+            aria-label={`Edit ${habit.name}`}
+            className="block w-full cursor-text truncate rounded-sm text-left text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
+          >
+            {habit.name}
+          </button>
+        )}
+        {streak > 0 && !editing && (
           <div className="text-xs text-zinc-500 dark:text-zinc-400">{streak}-day streak</div>
         )}
       </div>
