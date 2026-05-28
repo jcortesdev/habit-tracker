@@ -127,7 +127,7 @@ export function HabitRow({ habit, entries, today }: HabitRowProps) {
             type="button"
             onClick={startEditing}
             aria-label={`Edit ${habit.name}`}
-            className="block w-full cursor-text truncate rounded-sm text-left text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
+            className="block w-full truncate rounded-sm text-left text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
           >
             {habit.name}
           </button>
