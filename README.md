@@ -8,7 +8,11 @@
 ![Dexie](https://img.shields.io/badge/-Dexie-FE5196?style=flat-square)
 ![PWA](https://img.shields.io/badge/-PWA-5A0FC8?style=flat-square&logo=pwa&logoColor=white)
 
-**Live demo:** `demo-habits.jcortes.dev` *(deploys at Module 5 — currently in progress)*
+**Live demo:** [demo-habit.jcortes.dev](https://demo-habit.jcortes.dev)
+
+| Light | Dark |
+|-------|------|
+| ![Habit Tracker in light mode](docs/screenshot-light.png) | ![Habit Tracker in dark mode](docs/screenshot-dark.png) |
 
 ---
 
