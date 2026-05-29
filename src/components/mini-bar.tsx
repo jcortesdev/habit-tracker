@@ -33,8 +33,10 @@ export function MiniBar({ entries, habitId, color, today }: MiniBarProps) {
           key={date}
           title={date}
           aria-hidden
-          style={done ? { backgroundColor: color } : undefined}
-          className={`block size-3 rounded-sm ${done ? '' : 'bg-zinc-200 dark:bg-zinc-800'}`}
+          style={{
+            backgroundColor: done ? color : `color-mix(in oklch, ${color} 14%, transparent)`,
+          }}
+          className="block size-3 rounded-sm"
         />
       ))}
     </div>

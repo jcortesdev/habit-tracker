@@ -105,7 +105,10 @@ export function Heatmap({ entries, habits, today }: HeatmapProps) {
   }
 
   return (
-    <section aria-labelledby="heatmap-heading" className="space-y-3">
+    <section
+      aria-labelledby="heatmap-heading"
+      className="space-y-3 rounded-2xl border border-zinc-200/80 bg-surface p-4 shadow-sm shadow-zinc-900/[0.04] dark:border-zinc-800 dark:shadow-none"
+    >
       <div className="flex items-baseline justify-between">
         <h2 id="heatmap-heading" className="text-sm font-semibold">
           Last year

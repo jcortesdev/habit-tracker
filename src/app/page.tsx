@@ -18,11 +18,30 @@ export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-10 sm:py-16">
       <header className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Habit Tracker</h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Offline-first. Your data lives on this device.
-          </p>
+        <div className="flex items-center gap-3">
+          <span
+            aria-hidden
+            className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-sm shadow-emerald-600/30 ring-1 ring-emerald-600/20 dark:from-emerald-500 dark:to-emerald-700"
+          >
+            <svg
+              viewBox="0 0 16 16"
+              className="size-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <title>Habit Tracker</title>
+              <path d="M3.5 8.5l3 3 6-6" />
+            </svg>
+          </span>
+          <div className="space-y-0.5">
+            <h1 className="text-2xl font-semibold tracking-tight">Habit Tracker</h1>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Offline-first. Your data lives on this device.
+            </p>
+          </div>
         </div>
         <ThemeToggle />
       </header>

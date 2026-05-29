@@ -25,7 +25,7 @@ export function AddHabitForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white/50 p-4 dark:border-zinc-800 dark:bg-zinc-900/40"
+      className="flex flex-col gap-3 rounded-2xl border border-zinc-200/80 bg-surface p-4 shadow-sm shadow-zinc-900/[0.04] dark:border-zinc-800 dark:shadow-none"
     >
       <label className="flex flex-col gap-1.5">
         <span className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
