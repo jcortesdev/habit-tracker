@@ -105,7 +105,10 @@ export function Heatmap({ entries, habits, today }: HeatmapProps) {
   }
 
   return (
-    <section aria-labelledby="heatmap-heading" className="space-y-3">
+    <section
+      aria-labelledby="heatmap-heading"
+      className="space-y-3 rounded-2xl border border-zinc-200/80 bg-surface p-4 shadow-sm shadow-zinc-900/[0.04] dark:border-zinc-800 dark:shadow-none"
+    >
       <div className="flex items-baseline justify-between">
         <h2 id="heatmap-heading" className="text-sm font-semibold">
           Last year
@@ -140,7 +143,8 @@ export function Heatmap({ entries, habits, today }: HeatmapProps) {
       <div className="relative">
         <div className="overflow-x-auto">
           <svg
-            role="img"
+            // biome-ignore lint/a11y/useSemanticElements: an <svg> can't become a <fieldset>; role=group (not an atomic img) keeps each labelled, keyboard-navigable cell exposed to assistive tech
+            role="group"
             aria-label="Yearly activity heatmap"
             viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
             width="100%"
@@ -187,8 +191,10 @@ export function Heatmap({ entries, habits, today }: HeatmapProps) {
                 const isHovered = hovered?.date === date;
                 const isFocused = focused.col === c && focused.row === r;
                 return (
+                  // biome-ignore lint/a11y/noInteractiveElementToNoninteractiveRole: cells use roving tabindex for keyboard nav; role=img supplies the per-cell accessible name that axe requires on a labelled <rect>
                   <rect
                     key={date}
+                    role="img"
                     ref={isFocused ? focusRef : undefined}
                     x={x}
                     y={y}

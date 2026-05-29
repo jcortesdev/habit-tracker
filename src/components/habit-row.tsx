@@ -77,7 +77,10 @@ export function HabitRow({ habit, entries, today }: HabitRowProps) {
   }
 
   return (
-    <li className="flex items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 dark:border-zinc-800">
+    <li
+      style={{ '--habit': habit.color } as React.CSSProperties}
+      className="flex items-center gap-3 rounded-xl border border-zinc-200/80 bg-surface px-4 py-3 shadow-sm shadow-zinc-900/[0.03] transition-shadow motion-reduce:transition-none hover:shadow-md hover:shadow-zinc-900/[0.06] dark:border-zinc-800 dark:shadow-none dark:hover:bg-zinc-900"
+    >
       <button
         type="button"
         onClick={handleToggle}
@@ -89,7 +92,7 @@ export function HabitRow({ habit, entries, today }: HabitRowProps) {
         className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100 ${
           doneToday
             ? 'border-transparent'
-            : 'border-zinc-300 hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-600'
+            : 'border-[color-mix(in_oklch,var(--habit)_45%,transparent)] bg-[color-mix(in_oklch,var(--habit)_9%,transparent)] hover:border-[color-mix(in_oklch,var(--habit)_75%,transparent)] hover:bg-[color-mix(in_oklch,var(--habit)_16%,transparent)]'
         }`}
       >
         {doneToday && (
