@@ -1,18 +1,21 @@
 'use client';
 
 import { AddHabitForm } from '@/components/add-habit-form';
+import { DemoBanner } from '@/components/demo-banner';
 import { EmptyState } from '@/components/empty-state';
 import { HabitList } from '@/components/habit-list';
 import { Heatmap } from '@/components/heatmap';
 import { LoadingSkeleton } from '@/components/loading-skeleton';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { toIsoDate } from '@/lib/iso-date';
+import { useDemoData } from '@/lib/use-demo-data';
 import { useEntries } from '@/lib/use-entries';
 import { useHabits } from '@/lib/use-habits';
 
 export default function Home() {
   const habits = useHabits();
   const entries = useEntries();
+  const { isDemo, seeding, clearDemo } = useDemoData(habits);
   const today = toIsoDate(new Date());
 
   return (
@@ -46,7 +49,7 @@ export default function Home() {
         <ThemeToggle />
       </header>
 
-      {habits === undefined || entries === undefined ? (
+      {habits === undefined || entries === undefined || seeding ? (
         <LoadingSkeleton />
       ) : habits.length === 0 ? (
         <>
@@ -55,6 +58,7 @@ export default function Home() {
         </>
       ) : (
         <>
+          {isDemo && <DemoBanner onClear={clearDemo} />}
           <Heatmap entries={entries} habits={habits} today={today} />
           <AddHabitForm />
           <HabitList habits={habits} entries={entries} today={today} />
