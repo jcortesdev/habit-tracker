@@ -5,17 +5,20 @@ import { DemoBanner } from '@/components/demo-banner';
 import { EmptyState } from '@/components/empty-state';
 import { HabitList } from '@/components/habit-list';
 import { Heatmap } from '@/components/heatmap';
+import { InstallBanner } from '@/components/install-banner';
 import { LoadingSkeleton } from '@/components/loading-skeleton';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { toIsoDate } from '@/lib/iso-date';
 import { useDemoData } from '@/lib/use-demo-data';
 import { useEntries } from '@/lib/use-entries';
 import { useHabits } from '@/lib/use-habits';
+import { useInstallPrompt } from '@/lib/use-install-prompt';
 
 export default function Home() {
   const habits = useHabits();
   const entries = useEntries();
   const { isDemo, seeding, clearDemo } = useDemoData(habits);
+  const { canInstall, install, dismiss } = useInstallPrompt();
   const today = toIsoDate(new Date());
 
   return (
@@ -48,6 +51,8 @@ export default function Home() {
         </div>
         <ThemeToggle />
       </header>
+
+      {canInstall && <InstallBanner onInstall={install} onDismiss={dismiss} />}
 
       {habits === undefined || entries === undefined || seeding ? (
         <LoadingSkeleton />
