@@ -93,16 +93,17 @@ pnpm typecheck    # tsc --noEmit
 src/
 ├── app/
 │   ├── layout.tsx           # root layout, metadata, fonts
-│   ├── page.tsx             # home: habit list + aggregated heatmap (M3+)
+│   ├── page.tsx             # home: heatmap + add form + habit list
 │   ├── manifest.ts          # web app manifest (Next 13+ convention)
 │   ├── sw.ts                # Serwist service worker source
+│   ├── icon.svg             # branded favicon (also favicon.ico + apple-icon.png)
 │   └── globals.css          # Tailwind v4 import + design tokens
-├── components/              # flat list, co-located tests, no barrels (M3+)
-└── lib/                     # Dexie client + pure helpers (M2+)
+├── components/              # flat list, co-located tests, no barrels
+└── lib/                     # Dexie client + pure helpers + hooks
 public/
-└── icons/                   # PWA icons (placeholders for now, real in M5)
-scripts/
-└── generate-placeholder-icons.mjs   # zero-dep PNG generator for the placeholder icons
+└── icons/                   # PWA icons (192 / 512 / maskable)
+tests/
+└── e2e/                     # Playwright: core flow, keyboard nav, a11y, offline
 ```
 
 ## Architecture decisions
@@ -118,15 +119,14 @@ Key trade-offs documented in [`docs/DECISIONS.md`](./docs/DECISIONS.md) as light
 
 ## Performance and accessibility
 
-Targets (verified in Module 5):
+Measured against the production build:
 
-- Lighthouse PWA audit ≥ 90
-- Lighthouse Performance ≥ 90 on desktop, ≥ 80 on mobile
-- `@axe-core/playwright` — 0 violations on the rendered page
-- Installable on Chrome / Edge desktop and Android
-- Works end-to-end in airplane mode after first install
+- **Lighthouse:** Performance 99 · Accessibility 100 · Best Practices 96 · SEO 100
+- **`@axe-core/playwright`** — 0 violations on both the empty and populated states (run in the E2E suite)
+- **Installable** on Chrome / Edge desktop and Android, via a custom deferred-prompt banner
+- **Works end-to-end in airplane mode** — verified by reloading the production build offline; the service worker serves the shell and IndexedDB serves the data
 
-Honest note: these are aspirational until Module 5 lands. The current state is documented in the private progress tracker.
+> Note: Lighthouse 12 retired the standalone PWA category, so installability is verified through the manifest + service worker + a working install prompt rather than a single score.
 
 ## What I'd do differently in production
 
@@ -139,7 +139,7 @@ This is a portfolio demo. At production scale I would:
 
 ## Status
 
-In progress — Module 1 (PWA shell) landing. The Next.js scaffold, Biome / Vitest / Playwright tooling, Serwist service worker, manifest, and placeholder PWA icons are in. The habit data model, UI, and heatmap land in Modules 2-4; deploy in Module 5. See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the full roadmap.
+**Complete and deployed** — all five modules shipped, live at [demo-habit.jcortes.dev](https://demo-habit.jcortes.dev). PWA shell, Dexie data layer, core UI, the hand-built D3 heatmap, and the M5 polish (refined visuals, branded icons, demo data, install banner, E2E + a11y) are all in `main`. See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the full roadmap.
 
 ## License
 

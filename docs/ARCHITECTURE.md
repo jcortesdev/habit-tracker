@@ -75,8 +75,8 @@ The app is a real PWA, verified by:
 
 - A `manifest.json` declaring name, icons, start URL, display mode (`standalone`), and theme color.
 - A service worker that precaches the app shell (HTML, JS, CSS, icon set) and serves it cache-first when offline.
-- Install criteria met on Chrome / Edge desktop and Android (Lighthouse PWA audit ≥ 90).
-- An end-to-end check in Module 5: load the app once online, switch to airplane mode, reload, mark a habit, reload again — data persists, UI works.
+- Install criteria met on Chrome / Edge desktop and Android, surfaced through a custom deferred-prompt banner.
+- Verified end-to-end: load the app once online, switch to airplane mode, reload, mark a habit, reload again — data persists, UI works. Covered by the production-build offline check and the Playwright `offline` spec.
 
 The service worker uses **Serwist** (`@serwist/next`), the actively-maintained successor to `next-pwa`. It compiles a Workbox-based service worker from `src/app/sw.ts` and emits `public/sw.js` at build time. Serwist needs webpack (not Turbopack) for the SW build, so dev and build scripts pass `--webpack` to Next.
 
@@ -147,11 +147,11 @@ We don't aim for 100% coverage. The pure helpers get exhaustive unit tests becau
 
 ## Module roadmap
 
-The project ships in **five modules**, each producing something visible (with M0 as the only doc-only exception):
+The project shipped in **five modules**, each producing something visible (with M0 as the only doc-only exception). **All five are complete and deployed** at [demo-habit.jcortes.dev](https://demo-habit.jcortes.dev):
 
-- **M0 — Foundation:** README, ARCHITECTURE, DECISIONS, LICENSE, `.gitignore`, repo.
-- **M1 — Scaffolding + PWA shell:** Next.js scaffold, Biome, Vitest, Playwright, service worker, manifest, installable.
-- **M2 — Data layer:** Dexie schema, pure helpers, unit + integration tests.
-- **M3 — Core UI:** habit list, add / toggle / delete, streak indicator, mini 7-day bar, dark mode.
-- **M4 — D3 heatmap:** 365-cell SVG grid, intensity scale, per-habit drilldown, keyboard navigation.
-- **M5 — Polish + ship:** install banner, offline E2E, Lighthouse pass, real screenshots, deploy.
+- ✅ **M0 — Foundation:** README, ARCHITECTURE, DECISIONS, LICENSE, `.gitignore`, repo.
+- ✅ **M1 — Scaffolding + PWA shell:** Next.js scaffold, Biome, Vitest, Playwright, service worker, manifest, installable.
+- ✅ **M2 — Data layer:** Dexie schema, pure helpers, unit + integration tests.
+- ✅ **M3 — Core UI:** habit list, add / toggle / delete, streak indicator, mini 7-day bar, dark mode.
+- ✅ **M4 — D3 heatmap:** 53×7 SVG grid, intensity scale, per-habit drilldown, keyboard navigation.
+- ✅ **M5 — Polish + ship:** refined visuals, branded icons, demo data, install banner, E2E + a11y, Vercel deploy.
