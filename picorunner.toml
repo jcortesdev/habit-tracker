@@ -1,0 +1,28 @@
+schema = 1
+name = "Habit Tracker"
+
+[runtime]
+kind = "node"
+version = "24"
+package_manager = "pnpm"
+
+[[setup.steps]]
+kind = "dependencies"
+locked = true
+
+[[setup.steps]]
+run = ["pnpm", "run", "build"]
+
+[launch]
+command = ["pnpm", "run", "start", "--hostname", "{host}", "--port", "{port}"]
+host = "127.0.0.1"
+port = 4333
+
+[health]
+type = "http"
+path = "/"
+timeout_seconds = 90
+
+[persistence]
+# User-created data lives in browser storage, outside the checkout.
+paths = []

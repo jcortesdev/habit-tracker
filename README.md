@@ -69,6 +69,13 @@ See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the deeper rationale.
 
 ## Local development
 
+### Run with PicoRunner
+
+[![Launch on PicoRunner](https://picorunner.com/badges/launch.svg)](https://picorunner.com/launch/?repository=https%3A%2F%2Fgithub.com%2Fjcortesdev%2Fhabit-tracker)
+
+[PicoRunner](https://picorunner.com/) opens installation review for this repository on macOS. The manifest uses Node 24 and locked pnpm dependencies, builds the existing webpack production app, and runs `next start` on `127.0.0.1`. Habits and settings stay in browser IndexedDB/storage; keep the same browser profile and local address. This launch path does not add account or sync services.
+
+
 **Requirements:** Node.js 20+ and pnpm 9+.
 
 ```bash
